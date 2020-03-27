@@ -41,7 +41,9 @@ Imports:
 	scales,
 	zinbwave,
 	phylobase,
-	pracma
+	pracma,
+	BiocNeighbors
+Remotes: lorenzonegro/BiocNeighbors
 Suggests:
 	BiocStyle,
 	knitr,
