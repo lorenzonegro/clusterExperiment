@@ -288,7 +288,8 @@ setGeneric(name = "removeClusterings", def = function(x,...) {
 setGeneric( name = "clusteringInfo", def = function(x) { standardGeneric("clusteringInfo")})
 setGeneric( name = "makeConsensus", def = function(x, ...) {
     standardGeneric("makeConsensus")})
-
+setGeneric( name = "makeConsensus2", def = function(x, ...) {
+  standardGeneric("makeConsensus2")})
 
 
 
@@ -337,3 +338,4 @@ setGeneric(
     standardGeneric("getPostProcessingArgs")
   }
 )
+
