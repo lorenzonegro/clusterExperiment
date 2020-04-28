@@ -87,6 +87,7 @@ Collate:
     'mainClustering.R'
     'makeBlankData.R'
     'makeConsensus.R'
+    'makeConsensus2.R'
     'makeDendrogram.R'
     'makeFilterStats.R'
     'makeReducedDims.R'
