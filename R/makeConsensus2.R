@@ -94,7 +94,7 @@ setMethod(
     clusterMat[clusterMat %in%  c(-1,-2)] <- NA
     
     require(scran)
-    g=buildSNNGraph(clusterMat, k, BNPARAM = VptreeParam(distance = "Hamming"),transposed=TRUE)
+    g=buildSNNGraph2(clusterMat, k, BNPARAM = VptreeParam(distance = "Hamming"),transposed=TRUE)
     
     require(igraph)
     if(algorithm=="cluster_walktrap") clustering=cluster_walktrap(g)
