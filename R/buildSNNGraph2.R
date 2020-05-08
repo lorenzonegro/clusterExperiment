@@ -26,7 +26,7 @@
 #' @param indices An integer matrix where each row corresponds to a cell and contains the indices of the \code{k} nearest neighbors (by increasing distance) from that cell.
 #' 
 #' @details
-#' The \code{buildSNNGraph} method builds a shared nearest-neighbour graph using cells as nodes.
+#' The \code{buildSNNGraph2} method builds a shared nearest-neighbour graph using cells as nodes.
 #' For each cell, its \code{k} nearest neighbours are identified using the \code{\link{findKNN}} function,
 #' based on distances between their expression profiles (Euclidean by default).
 #' An edge is drawn between all pairs of cells that share at least one neighbour,
@@ -53,12 +53,12 @@
 #' The choice of \code{k} controls the connectivity of the graph and the resolution of community detection algorithms.
 #' Smaller values of \code{k} will generally yield smaller, finer clusters, while increasing \code{k} will increase the connectivity of the graph and make it more difficult to resolve different communities.
 #' The value of \code{k} can be roughly interpreted as the anticipated size of the smallest subpopulation.
-#' If a subpopulation in the data has fewer than \code{k+1} cells, \code{buildSNNGraph} and \code{buildKNNGraph} will forcibly construct edges between cells in that subpopulation and cells in other subpopulations. 
+#' If a subpopulation in the data has fewer than \code{k+1} cells, \code{buildSNNGraph2} and \code{buildKNNGraph} will forcibly construct edges between cells in that subpopulation and cells in other subpopulations. 
 #' This increases the risk that the subpopulation will not form its own cluster as it is more interconnected with the rest of the cells in the dataset.
 #' 
 #' Note that the setting of \code{k} here is slightly different from that used in SNN-Cliq.
 #' The original implementation considers each cell to be its first nearest neighbor that contributes to \code{k}.
-#' In \code{buildSNNGraph}, the \code{k} nearest neighbours refers to the number of \emph{other} cells.
+#' In \code{buildSNNGraph2}, the \code{k} nearest neighbours refers to the number of \emph{other} cells.
 #' 
 #' The \code{buildKNNGraph} method builds a simpler k-nearest neighbour graph.
 #' Cells are again nodes, and edges are drawn between each cell and its k-nearest neighbours.
@@ -97,7 +97,7 @@
 #' 
 #' @return
 #' A \link{graph} where nodes are cells and edges represent connections between nearest neighbors.
-#' For \code{buildSNNGraph}, these edges are weighted by the number of shared nearest neighbors.
+#' For \code{buildSNNGraph2}, these edges are weighted by the number of shared nearest neighbors.
 #' For \code{buildKNNGraph}, edges are not weighted but may be directed if \code{directed=TRUE}.
 #' 
 #' @author 
@@ -120,7 +120,7 @@
 #' sce <- mockSCE(ncells=500)
 #' sce <- logNormCounts(sce)
 #'
-#' g <- buildSNNGraph(sce)
+#' g <- buildSNNGraph2(sce)
 #' clusters <- igraph::cluster_fast_greedy(g)$membership
 #' table(clusters)
 #'
@@ -129,23 +129,26 @@
 #' table(clusters)
 #'
 #' # Smaller 'k' usually yields finer clusters:
-#' g <- buildSNNGraph(sce, k=5)
+#' g <- buildSNNGraph2(sce, k=5)
 #' clusters <- igraph::cluster_walktrap(g)$membership
 #' table(clusters)
 #'
 #' # Graph can be built off existing reducedDims results:
 #' sce <- runPCA(sce)
-#' g <- buildSNNGraph(sce, use.dimred="PCA")
+#' g <- buildSNNGraph2(sce, use.dimred="PCA")
 #' clusters <- igraph::cluster_fast_greedy(g)$membership
 #' table(clusters)
 #' 
-#' @name buildSNNGraph
+#' @name buildSNNGraph2
 NULL
 
 #' @importFrom BiocNeighbors KmknnParam
 #' @importFrom BiocParallel SerialParam
 #' @importFrom BiocSingular bsparam
-.buildSNNGraph <- function(x, k=10, d=50, 
+#' @importFrom scran build_snn_rank
+#' @importFrom scran neighborsToSNNGraph
+
+.buildSNNGraph2 <- function(x, k=10, d=50, 
                            type=c("rank", "number", "jaccard"),
                            transposed=FALSE, subset.row=NULL, 
                            BNPARAM=KmknnParam(), BSPARAM=bsparam(), BPPARAM=SerialParam()) 
@@ -190,35 +193,35 @@ NULL
 #########################
 
 #' @export
-#' @rdname buildSNNGraph
-setGeneric("buildSNNGraph", function(x, ...) standardGeneric("buildSNNGraph"))
+#' @rdname buildSNNGraph2
+setGeneric("buildSNNGraph2", function(x, ...) standardGeneric("buildSNNGraph2"))
 
 #' @export
-#' @rdname buildSNNGraph
-setMethod("buildSNNGraph", "ANY", .buildSNNGraph)
+#' @rdname buildSNNGraph2
+setMethod("buildSNNGraph2", "ANY", .buildSNNGraph2)
 
 #' @export
-#' @rdname buildSNNGraph
+#' @rdname buildSNNGraph2
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SingleCellExperiment reducedDim 
-setMethod("buildSNNGraph", "SingleCellExperiment", function(x, ..., assay.type="logcounts", use.dimred=NULL) {
+setMethod("buildSNNGraph2", "SingleCellExperiment", function(x, ..., assay.type="logcounts", use.dimred=NULL) {
   if (!is.null(use.dimred)) {
-    .buildSNNGraph(reducedDim(x, use.dimred), d=NA, transposed=TRUE, ...)
+    .buildSNNGraph2(reducedDim(x, use.dimred), d=NA, transposed=TRUE, ...)
   } else {
-    .buildSNNGraph(assay(x, i=assay.type), transposed=FALSE, ...)
+    .buildSNNGraph2(assay(x, i=assay.type), transposed=FALSE, ...)
   }
 })
 
 #' @export
-#' @rdname buildSNNGraph
+#' @rdname buildSNNGraph2
 setGeneric("buildKNNGraph", function(x, ...) standardGeneric("buildKNNGraph"))
 
 #' @export
-#' @rdname buildSNNGraph
+#' @rdname buildSNNGraph2
 setMethod("buildKNNGraph", "ANY", .buildKNNGraph)
 
 #' @export
-#' @rdname buildSNNGraph
+#' @rdname buildSNNGraph2
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SingleCellExperiment reducedDim 
 setMethod("buildKNNGraph", "SingleCellExperiment", function(x, ..., assay.type="logcounts", use.dimred=NULL) {
@@ -234,8 +237,10 @@ setMethod("buildKNNGraph", "SingleCellExperiment", function(x, ..., assay.type="
 ############################
 
 #' @export
-#' @rdname buildSNNGraph
+#' @rdname buildSNNGraph2
 #' @importFrom igraph make_graph simplify "E<-"
+#' @importFrom scran build_snn_rank
+#' @importFrom scran build_snn_number
 neighborsToSNNGraph <- function(indices, type=c("rank", "number", "jaccard")) {
   type <- match.arg(type)
   if (type=="rank") {
@@ -257,7 +262,7 @@ neighborsToSNNGraph <- function(indices, type=c("rank", "number", "jaccard")) {
 
 
 #' @export
-#' @rdname buildSNNGraph
+#' @rdname buildSNNGraph2
 #' @importFrom igraph make_graph simplify
 neighborsToKNNGraph <- function(indices, directed=FALSE) {
   start <- as.vector(row(indices))

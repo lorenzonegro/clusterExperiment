@@ -81,24 +81,38 @@ setMethod(
   f = "makeConsensus2",
   signature = signature(x = "matrix"),
   definition = function(x, k=10,
-                        algorithm=c("cluster_walktrap","cluster_louvain"),
+                        alg=c("cluster_walktrap","cluster_louvain","components_weak","components_strong"),
                         propUnassigned=.5, minSize=5,...) 
   {
     
     #if(proportion >1 || proportion <0) stop("Invalid value for the 'proportion' parameter")
     #if(propUnassigned >1 || propUnassigned <0) stop("Invalid value for the 'propUnassigned' parameter")
-    #algorithm <- match.arg(algorithm)
+    #alg <- match.arg(alg)
     clusterMat <- x
     
     clusterMat <- apply(clusterMat, 2, as.integer)
     clusterMat[clusterMat %in%  c(-1,-2)] <- NA
     
     require(scran)
-    g=buildSNNGraph2(clusterMat, k, BNPARAM = VptreeParam(distance = "Hamming"),transposed=TRUE)
+    g=buildSNNGraph(clusterMat, k, BNPARAM = VptreeParam(distance = "Hamming"),transposed=TRUE)
     
     require(igraph)
-    if(algorithm=="cluster_walktrap") clustering=cluster_walktrap(g)
-    if(algorithm=="cluster_louvain") clustering=cluster_louvain(g)
+    if(alg=="cluster_walktrap") 
+    {
+      clustering=cluster_walktrap(g)
+    }
+    else if(alg=="cluster_louvain") 
+    {
+      clustering=cluster_louvain(g)
+    }
+    else if(alg=="components_weak") 
+    {
+      clustering=components(g,mode="weak")
+    }
+    else if (alg=="components_strong") 
+    {
+      clustering=components(g,mode="strong")
+    }
     #clustering=cluster_g$membership
     
     #if(proportion == 1) {

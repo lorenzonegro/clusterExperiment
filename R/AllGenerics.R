@@ -290,8 +290,8 @@ setGeneric( name = "makeConsensus", def = function(x, ...) {
     standardGeneric("makeConsensus")})
 setGeneric( name = "makeConsensus2", def = function(x, ...) {
   standardGeneric("makeConsensus2")})
-
-
+setGeneric( name = "buildSNNGraph2", def = function(x, ...) {
+  standardGeneric("buildSNNGraph2")})
 
 setGeneric(
   name = "getBestFeatures",
